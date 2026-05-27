@@ -1,0 +1,19 @@
+name: Update HTTP Proxy Sub
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 每天 UTC 0 点运行一次
+  workflow_dispatch:      # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - run: pip install requests
+      - run: python generate.py
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update proxy subscription"
