@@ -2,7 +2,6 @@ import requests
 import re
 import base64
 import json
-from urllib.parse import quote
 
 def main():
     url = "https://raw.githubusercontent.com/TopChina/proxy-list/main/README.md"
@@ -14,7 +13,6 @@ def main():
         print(f"下载失败: {e}")
         return
 
-    # 正则提取 IP:端口, 地区, 用户名
     pattern = r"\|\s*([\d.]+:\d+)\s*\|\s*([^|]+?)\s*\|\s*([A-Za-z0-9+/=_-]+)\s*\|"
     matches = re.findall(pattern, resp.text)
 
@@ -23,21 +21,23 @@ def main():
         ip, port = ip_port.split(':', 1)
         region = region.strip()
         username = username.strip()
-        # 构建 V2RayN 能识别的自定义配置对象
+
         server = {
-            "remarks": region,                   # 显示名称
-            "address": ip,                       # 服务器地址
-            "port": int(port),                   # 端口
-            "protocol": "http",                  # 协议类型（固定 http）
-            "id": username,                      # 用户名（对应 V2RayN 的 "id" 字段）
-            "security": "",                      # 加密方式（HTTP 不加密留空）
-            "network": "tcp",                    # 传输协议
-            "headerType": "none",                # 伪装类型
-            "flow": "",                          # 流控
-            "aid": 0,                            # 额外ID
-            "host": "",                          # 伪装域名
-            "path": "",                          # 路径
-            "tls": "",                           # TLS 设置
+            "remarks": region,           # 节点名称
+            "address": ip,               # 服务器地址
+            "port": int(port),           # 端口
+            "id": username,              # 用户名
+            "security": "1",             # ✅ 密码固定为 1，填入 security 字段
+            "protocol": "http",          # 协议类型
+            "configType": 1,             # 标记为 HTTP 代理（兼容旧版）
+            "network": "tcp",
+            "headerType": "none",
+            "allowInsecure": False,
+            "streamSecurity": "",
+            "publicKey": "",
+            "shortId": "",
+            "fingerprint": "",
+            "sni": ""
         }
         servers.append(server)
 
@@ -45,7 +45,6 @@ def main():
         print("未提取到任何代理。")
         return
 
-    # 将对象列表转为 JSON 并 Base64 编码
     json_str = json.dumps(servers, ensure_ascii=False, separators=(',', ':'))
     encoded = base64.b64encode(json_str.encode()).decode()
 
